@@ -1,0 +1,35 @@
+{
+  "name": "ranking_the_devs",
+  "version": "1.0.0",
+  "description": "A competition in implementing efficient backends",
+  "main": "main.js",
+  "scripts": {
+    "dev-backend": "nodemon main.js",
+    "dev-frontend": "webpack --mode development --watch",
+    "build": "webpack --mode production",
+    "start": "node main.js",
+    "test": "mocha --watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dionkoeze/ranking_the_devs.git"
+  },
+  "author": "Dion Koeze",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/dionkoeze/ranking_the_devs/issues"
+  },
+  "homepage": "https://github.com/dionkoeze/ranking_the_devs#readme",
+  "dependencies": {
+    "express": "^4.17.1",
+    "serve-favicon": "^2.5.0",
+    "socket.io": "^4.1.2"
+  },
+  "devDependencies": {
+    "mocha": "^9.0.1",
+    "nodemon": "^2.0.9",
+    "socket.io-client": "^4.1.2",
+    "webpack": "^5.41.1",
+    "webpack-cli": "^4.7.2"
+  }
+}
