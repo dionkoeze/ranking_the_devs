@@ -1,0 +1,192 @@
+@import '../variables.scss';
+
+.progress {
+    background-color: $color-D2;
+
+    &__title {
+        padding: .5em;
+    }
+}
+
+.scheduler, .processing, .queue {
+    &__title {
+        padding: .5em;
+    }
+}
+
+.scheduler {
+    
+    &__input {
+        display: flex;
+        width: 90%;
+        margin: auto
+    }
+
+    &__field {
+        width: 100%;
+        border: .2em solid transparent;
+        padding-left: .5em;
+        outline: none;
+
+        &:focus {
+            border-bottom: .2em solid $color-A;
+            transition: all .2s;
+        }
+    }
+
+    &__submit {
+        color: $color-E;
+        background-color: $color-B;
+        
+        font-weight: 600;
+        cursor: pointer;
+        
+        padding: .3em;
+        border-radius: .3em;
+
+        &:hover {
+            background-color: $color-A;
+        }
+    }
+}
+
+.processing {
+    &__items {
+        list-style: none;
+    }
+}
+
+.processing-item, .queue-item {
+    margin: .2em;
+    padding: .2em;
+    border-radius: .2em;
+}
+
+.processing-item {
+    display: grid;
+    grid-template-columns: 1fr, min-content;
+    grid-template-rows: repeat(2, 1fr) 2fr;
+
+    color: $color-D;
+    background-color: $color-A;
+
+    &:hover {
+        // TODO fix blurry transition in chrome?
+        transform: scale(1.01);
+        transition: all .5s;
+    }
+
+    &__url {
+        font-weight: 800;
+        margin-left: .5em;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__progress {
+        grid-column: 2 / 3;
+        grid-row: 1 / -1;
+        justify-self: right;
+        
+        margin: .6em;
+
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        align-items: center;
+        justify-items: center;
+
+        width: min-content;
+    }
+    
+    &__done {
+        font-size: 2em;
+        font-weight: 500;
+
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+    }
+    
+    &__slash {
+        color: $color-E;
+        font-size: 4em;
+
+        grid-column: 2 / 3;
+        grid-row: 1 / 4;
+    }
+
+    &__size {
+        grid-column: 3 / 4;
+        grid-row: 3 / 4;
+    }
+
+    &__id {
+        color: currentColor;
+        background-color: $color-A;
+        border: none;
+
+        cursor: pointer;
+
+        font-size: .7em;
+        margin-left: .5rem;
+
+        grid-column: 1 / 2;
+
+        white-space: nowrap;
+
+        &:hover {
+            font-weight: 600;
+            
+            transition: all .3s;
+        }
+    }
+
+    &__time {
+        grid-column: 1 / 2;
+        margin: .5em;
+        align-self: end;
+    }
+}
+
+.queue {
+    list-style-position: inside;
+}
+
+.queue-item {
+    color: $color-A;
+    background-color: $color-B;
+    
+    &::marker {
+        font-size: 1.5em;
+        font-weight: bolder;
+    }
+    
+    &:hover {
+        // TODO fix blurry transition in chrome?
+        transform: scale(1.01);
+        transition: all .2s;
+    }
+    
+    &__content {
+        display: inline-grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: repeat(2, 1fr) 1.5fr;
+        max-width: 90%;
+    }
+
+    &__url {
+        font-weight: 700;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__id {
+        font-size: .7em;
+        margin-bottom: .7em;
+    }
+
+    &__time {
+        align-self: end;
+    }
+}

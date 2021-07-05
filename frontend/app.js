@@ -1,3 +1,25 @@
-const socket = require('socket.io-client')()
+window.socket = require('socket.io-client')()
 
-console.log('yo')
+const m = require('mithril')
+
+socket.on('queue', (data) => console.log('queue', data))
+socket.on('processing', (data) => console.log('processing', data))
+
+const title = require('./title')
+const leaderboard = require('./leaderboard')
+const queue = require('./progress')
+const benchmarks = require('./benchmarks')
+
+const landing = {
+    view() {
+        return [
+            m(title),
+            m(leaderboard),
+            m(queue),
+            m(benchmarks),
+        ]
+    }
+}
+
+const root = document.body
+m.mount(root, landing)

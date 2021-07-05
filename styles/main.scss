@@ -1,0 +1,12 @@
+@import './variables.scss';
+@import './layout.scss';
+@import './typography.scss';
+
+@import './components/progress.scss';
+@import './components//title.scss';
+
+* {
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}

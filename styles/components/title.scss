@@ -1,0 +1,29 @@
+@import '../variables.scss';
+
+.title {
+    background-color: $color-C;
+
+    padding: .5em;
+
+    &__sub, &__credits {
+        color: $color-D;
+    }
+
+    &__main {
+        margin-left: 1em;
+    }
+
+    &__sub, &__credits {
+        margin-left: 4em;
+    }
+
+    &__link {
+        color: $color-A;
+        text-decoration: none;
+
+        &:hover {
+            color: $color-E;
+            transition: color .5s;
+        }
+    }
+}

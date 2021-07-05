@@ -1,39 +1,113 @@
-const queue = []
-const processing = []
+const uuid = require('uuid').v4
+
+const queue = [{
+    id: uuid(),
+    url: 'https://example.com',
+    time: new Date(),
+}, {
+    id: uuid(),
+    url: 'http://examp.le',
+    time: new Date(),
+},{
+    id: uuid(),
+    url: 'https://example.com',
+    time: new Date(),
+}, {
+    id: uuid(),
+    url: 'http://examp.le',
+    time: new Date(),
+},{
+    id: uuid(),
+    url: 'https://example.com',
+    time: new Date(),
+}, {
+    id: uuid(),
+    url: 'http://examp.le',
+    time: new Date(),
+},{
+    id: uuid(),
+    url: 'https://example.commmmmmmmmmmmmmmmmmmmm.commmmmmmmmmmm',
+    time: new Date(),
+}, {
+    id: uuid(),
+    url: 'http://examp.le',
+    time: new Date(),
+},{
+    id: uuid(),
+    url: 'https://example.com',
+    time: new Date(),
+}, {
+    id: uuid(),
+    url: 'http://examp.le',
+    time: new Date(),
+},{
+    id: uuid(),
+    url: 'https://example.com',
+    time: new Date(),
+}, {
+    id: uuid(),
+    url: 'http://examp.le',
+    time: new Date(),
+}]
+const processing = [{
+    id: uuid(),
+    url: 'https://example2.commmmmmmmmmmm.com',
+    time: new Date(),
+    done: 15,
+    size: 24,
+}, {
+    id: uuid(),
+    url: 'http://ex.nl',
+    time: new Date(),
+    done: 2,
+    size: 24,
+}]
 
 module.exports = (bus) => {
-    function dispatch() {
-        const url = dequeue()
+    // function dispatch() {
+    //     const url = dequeue()
         
-        // TODO start benchmark of url
+    //     // TODO start benchmark of url
         
-        bus.emit('update progress')
-    }
+    //     bus.emit('update progress')
+    // }
     
-    function schedule() {
-        if (queue.length === 0) return
-        
-        // TODO check busy state
-        
-        // TODO dispatch next url if space
-        dispatch()
-    }
-    
-    function enqueue(url) {
-        setImmediate(schedule)
-        
-        queue.push(url)
+    // function schedule() {
+    //     // TODO emit queue and processing events when queue or processing is empty
 
-        console.log(`${url} scheduled`)
-    }
+    //     if (queue.length === 0) return
+        
+    //     // TODO check busy state
+        
+    //     // TODO dispatch next url if space
+    //     dispatch()
+    // }
     
-    function dequeue() {
-        return queue.shift()
-    }
+    // function enqueue(url) {
+    //     setImmediate(schedule)
+        
+    //     queue.push(url)
+
+    //     console.log(`${url} scheduled`)
+    // }
+    
+    // function dequeue() {
+    //     return queue.shift()
+    // }
 
     bus.on('update progress', () => {
-        bus.emit('processing state', processing.map(b => ({url: b.url, progress: b.progress})))
-        bus.emit('queue state', queue)
+        // TODO append processing state with EMPTY spots, so it shows up in frontend
+        bus.emit('processing state', processing.map(item => ({
+            id: item.id,
+            url: item.url.replace('http://', '').replace('https://', ''),
+            done: item.done,
+            size: item.size,
+            time: item.time,
+        })))
+        bus.emit('queue state', queue.map(item => ({
+            ...item,
+            url: item.url.replace('http://', '').replace('https://', ''),
+        })))
     })
 
     bus.on('register url', (req) => {
@@ -47,7 +121,13 @@ module.exports = (bus) => {
     })
 
     bus.on('benchmark done', () => {
+        // TODO update queue and processing arrays
+
         bus.emit('update progress')
         schedule()
+    })
+
+    bus.on('online', () => {
+        bus.emit('update progress')
     })
 }

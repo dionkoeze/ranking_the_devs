@@ -1,0 +1,30 @@
+body {
+    display: grid;
+    // grid-template-columns: auto minmax(min-content, 25vw);
+    // grid-template-columns: 1fr minmax(1fr, 10em);
+    grid-template-columns: auto 25vw;
+    grid-template-rows: min-content 1fr;
+
+    height: 100vh;
+}
+
+.title {
+    grid-column: 1 / 3;
+}
+
+.leaderboard {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+}
+
+.progress {
+    grid-column: 2 / 3;
+    grid-row: 2 / 5;
+
+    height: 100%;
+}
+
+.benchmarks {
+    grid-column: 1 / 2;
+    grid-row: 3 / 4
+}

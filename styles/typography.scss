@@ -1,0 +1,27 @@
+@import './variables.scss';
+
+* {
+    font-family: 'Encode Sans SC', sans-serif;
+    font-weight: 400;
+}
+
+body {
+    color: $color-B;
+    background-color: $color-D;
+}
+
+h1 {
+    color: $color-E;
+    font-weight: 100;
+    font-size: 3em;
+}
+
+h2 {
+    color: $color-A;
+    font-weight: 500;
+}
+
+h3 {
+    color: $color-E;
+    font-weight: 400;
+}

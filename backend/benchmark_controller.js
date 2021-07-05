@@ -1,6 +1,7 @@
 const uuid = require('uuid').v4
 const router = require('express').Router()
 
+// only scheduling is done through REST api, as we want meaningful errors
 module.exports = (bus) => {
     router.post('/benchmark', (req, res) => {
         // TODO check for url with regex
