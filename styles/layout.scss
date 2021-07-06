@@ -1,6 +1,6 @@
 body {
     display: grid;
-    // grid-template-columns: auto minmax(min-content, 25vw);
+    grid-template-columns: auto minmax(max-content, 25vw);
     // grid-template-columns: 1fr minmax(1fr, 10em);
     grid-template-columns: auto 25vw;
     grid-template-rows: min-content 1fr;

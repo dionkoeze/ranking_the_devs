@@ -23,14 +23,17 @@ socket.on('processing', (data) => {
 
 function processing_item(item) {
     return m('li', {class: 'processing-item', key: item.id}, [
-        m('p', {class: 'processing-item__url'}, item.url),
+        m('div', {class: 'processing-item__info'}, [
+            m('p', {class: 'processing-item__url'}, item.url),
+            m('button', {class: 'processing-item__id'}, item.id), // TODO make id clickable and copy it to clipboard (change color on hover)
+            m('p', {class: 'processing-item__started'}, item.started),
+            m('p', {class: 'processing-item__scheduled'}, item.scheduled),
+        ]),
         m('p', {class: 'processing-item__progress'}, [
             m('span', {class: 'processing-item__done'}, item.done),
             m('span', {class: 'processing-item__slash'}, '/'),
             m('span', {class: 'processing-item__size'}, item.size),
         ]),
-        m('button', {class: 'processing-item__id'}, item.id), // TODO make id clickable and copy it to clipboard (change color on hover)
-        m('p', {class: 'processing-item__time'}, item.time),
     ])
 }
 
@@ -50,11 +53,28 @@ socket.on('queue', (data) => {
 })
 
 function queue_item(item) {
+    let show_copied = false // TODO message does not show up when button is clicked
+
+    function show_message() {
+        show_copied = true
+
+        console.log(show_copied)
+        console.log((show_copied ? m('p', {class: 'queue-item__copied'}, 'Copied to clipboard!') : undefined))
+
+        setTimeout(() => {
+            show_copied = false
+            console.log(show_copied)
+            console.log((show_copied ? m('p', {class: 'queue-item__copied'}, 'Copied to clipboard!') : undefined))
+            m.redraw()
+        }, 3000)
+    }
+
     return m('li', {class: 'queue-item', key: item.id}, 
         m('div', {class: 'queue-item__content'}, [
             m('p', {class: 'queue-item__url'}, item.url),
-            m('button', {class: 'queue-item__id'}, item.id), // TODO make id clickable and copy it to clipboard (change color on hover)
-            m('p', {class: 'queue-item__time'}, item.time)
+            m('button', {class: 'queue-item__id', onclick: show_message}, item.id), // TODO make id clickable and copy it to clipboard (change color on hover)
+            (show_copied ? m('p', {class: 'queue-item__copied'}, 'Copied to clipboard!') : undefined),
+            m('p', {class: 'queue-item__scheduled'}, item.scheduled)
         ])
     )
 }

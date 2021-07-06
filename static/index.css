@@ -1,5 +1,6 @@
 body {
   display: grid;
+  grid-template-columns: auto minmax(max-content, 25vw);
   grid-template-columns: auto 25vw;
   grid-template-rows: min-content 1fr;
   height: 100vh;
@@ -102,19 +103,48 @@ h3 {
 .processing-item {
   display: grid;
   grid-template-columns: 1fr, min-content;
-  grid-template-rows: repeat(2, 1fr) 2fr;
   color: #fbffe8;
   background-color: #247BA0;
 }
 .processing-item:hover {
   transform: scale(1.01);
-  transition: all 0.5s;
+  transition: all 0.2s;
+}
+.processing-item__info {
+  display: grid;
 }
 .processing-item__url {
-  font-weight: 800;
-  margin-left: 0.5em;
+  font-weight: 700;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-left: 0.5rem;
+}
+.processing-item__id {
+  color: currentColor;
+  background-color: #247BA0;
+  border: none;
+  cursor: pointer;
+  font-size: 0.7em;
+  white-space: nowrap;
+  text-align: left;
+  margin-left: 0.5rem;
+  grid-column: 1/2;
+}
+.processing-item__id:hover {
+  color: #FF1654;
+  transition: all 0.3s;
+}
+.processing-item__started {
+  grid-column: 1/2;
+  margin-left: 0.5em;
+  align-self: end;
+}
+.processing-item__scheduled {
+  font-size: 0.7em;
+  grid-column: 1/2;
+  margin-left: 1.2em;
+  margin-bottom: 0.5em;
+  align-self: end;
 }
 .processing-item__progress {
   grid-column: 2/3;
@@ -143,25 +173,6 @@ h3 {
   grid-column: 3/4;
   grid-row: 3/4;
 }
-.processing-item__id {
-  color: currentColor;
-  background-color: #247BA0;
-  border: none;
-  cursor: pointer;
-  font-size: 0.7em;
-  margin-left: 0.5rem;
-  grid-column: 1/2;
-  white-space: nowrap;
-}
-.processing-item__id:hover {
-  font-weight: 600;
-  transition: all 0.3s;
-}
-.processing-item__time {
-  grid-column: 1/2;
-  margin: 0.5em;
-  align-self: end;
-}
 
 .queue {
   list-style-position: inside;
@@ -180,6 +191,7 @@ h3 {
   transition: all 0.2s;
 }
 .queue-item__content {
+  position: relative;
   display: inline-grid;
   grid-template-columns: 1fr;
   grid-template-rows: repeat(2, 1fr) 1.5fr;
@@ -191,11 +203,28 @@ h3 {
   text-overflow: ellipsis;
 }
 .queue-item__id {
+  color: currentColor;
+  background-color: #70C1B3;
+  border: none;
+  cursor: pointer;
   font-size: 0.7em;
-  margin-bottom: 0.7em;
+  white-space: nowrap;
+  text-align: left;
 }
-.queue-item__time {
+.queue-item__id:hover {
+  color: #FF1654;
+  transition: all 0.3s;
+}
+.queue-item__scheduled {
   align-self: end;
+}
+.queue-item__copied {
+  position: absolute;
+  top: 3.9em;
+  right: 0;
+  color: #FF1654;
+  font-size: 0.6em;
+  font-weight: 600;
 }
 
 .title {

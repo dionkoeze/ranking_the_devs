@@ -3,62 +3,64 @@ const uuid = require('uuid').v4
 const queue = [{
     id: uuid(),
     url: 'https://example.com',
-    time: new Date(),
+    scheduled: new Date(),
 }, {
     id: uuid(),
     url: 'http://examp.le',
-    time: new Date(),
+    scheduled: new Date(),
 },{
     id: uuid(),
     url: 'https://example.com',
-    time: new Date(),
+    scheduled: new Date(),
 }, {
     id: uuid(),
     url: 'http://examp.le',
-    time: new Date(),
+    scheduled: new Date(),
 },{
     id: uuid(),
     url: 'https://example.com',
-    time: new Date(),
+    scheduled: new Date(),
 }, {
     id: uuid(),
     url: 'http://examp.le',
-    time: new Date(),
+    scheduled: new Date(),
 },{
     id: uuid(),
     url: 'https://example.commmmmmmmmmmmmmmmmmmmm.commmmmmmmmmmm',
-    time: new Date(),
+    scheduled: new Date(),
 }, {
     id: uuid(),
     url: 'http://examp.le',
-    time: new Date(),
+    scheduled: new Date(),
 },{
     id: uuid(),
     url: 'https://example.com',
-    time: new Date(),
+    scheduled: new Date(),
 }, {
     id: uuid(),
     url: 'http://examp.le',
-    time: new Date(),
+    scheduled: new Date(),
 },{
     id: uuid(),
     url: 'https://example.com',
-    time: new Date(),
+    scheduled: new Date(),
 }, {
     id: uuid(),
     url: 'http://examp.le',
-    time: new Date(),
+    scheduled: new Date(),
 }]
 const processing = [{
     id: uuid(),
     url: 'https://example2.commmmmmmmmmmm.com',
-    time: new Date(),
+    scheduled: new Date(),
+    started: new Date(),
     done: 15,
     size: 24,
 }, {
     id: uuid(),
     url: 'http://ex.nl',
-    time: new Date(),
+    scheduled: new Date(),
+    started: new Date(),
     done: 2,
     size: 24,
 }]
@@ -102,7 +104,8 @@ module.exports = (bus) => {
             url: item.url.replace('http://', '').replace('https://', ''),
             done: item.done,
             size: item.size,
-            time: item.time,
+            scheduled: item.scheduled,
+            started: item.started,
         })))
         bus.emit('queue state', queue.map(item => ({
             ...item,

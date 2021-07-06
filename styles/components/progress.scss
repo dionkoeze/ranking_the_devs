@@ -1,5 +1,29 @@
 @import '../variables.scss';
 
+@mixin id($back-color) {
+    color: currentColor;
+    background-color: $back-color;
+    border: none;
+    cursor: pointer;
+
+    font-size: .7em;
+
+    white-space: nowrap;
+    text-align: left;
+
+    &:hover {
+        color: $color-E;
+        transition: all .3s;
+    }
+}
+
+@mixin url {
+    font-weight: 700;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .progress {
     background-color: $color-D2;
 
@@ -15,7 +39,6 @@
 }
 
 .scheduler {
-    
     &__input {
         display: flex;
         width: 90%;
@@ -65,7 +88,6 @@
 .processing-item {
     display: grid;
     grid-template-columns: 1fr, min-content;
-    grid-template-rows: repeat(2, 1fr) 2fr;
 
     color: $color-D;
     background-color: $color-A;
@@ -73,15 +95,37 @@
     &:hover {
         // TODO fix blurry transition in chrome?
         transform: scale(1.01);
-        transition: all .5s;
+        transition: all .2s;
+    }
+
+    &__info {
+        display: grid;
     }
 
     &__url {
-        font-weight: 800;
-        margin-left: .5em;
+        @include url;
+        margin-left: .5rem;
+    }
+    
+    &__id {
+        @include id($color-A);
+        
+        margin-left: .5rem;
+        grid-column: 1 / 2;
+    }
 
-        overflow: hidden;
-        text-overflow: ellipsis;
+    &__started {
+        grid-column: 1 / 2;
+        margin-left: .5em;
+        align-self: end;
+    }
+
+    &__scheduled {
+        font-size: .7em;
+        grid-column: 1 / 2;
+        margin-left: 1.2em;
+        margin-bottom: .5em;
+        align-self: end;
     }
 
     &__progress {
@@ -119,33 +163,6 @@
         grid-column: 3 / 4;
         grid-row: 3 / 4;
     }
-
-    &__id {
-        color: currentColor;
-        background-color: $color-A;
-        border: none;
-
-        cursor: pointer;
-
-        font-size: .7em;
-        margin-left: .5rem;
-
-        grid-column: 1 / 2;
-
-        white-space: nowrap;
-
-        &:hover {
-            font-weight: 600;
-            
-            transition: all .3s;
-        }
-    }
-
-    &__time {
-        grid-column: 1 / 2;
-        margin: .5em;
-        align-self: end;
-    }
 }
 
 .queue {
@@ -168,6 +185,7 @@
     }
     
     &__content {
+        position: relative;
         display: inline-grid;
         grid-template-columns: 1fr;
         grid-template-rows: repeat(2, 1fr) 1.5fr;
@@ -175,18 +193,23 @@
     }
 
     &__url {
-        font-weight: 700;
-
-        overflow: hidden;
-        text-overflow: ellipsis;
+        @include url;
     }
 
     &__id {
-        font-size: .7em;
-        margin-bottom: .7em;
+        @include id($color-B);
     }
 
-    &__time {
+    &__scheduled {
         align-self: end;
+    }
+
+    &__copied {
+        position: absolute;
+        top: 3.9em;
+        right: 0;
+        color: $color-E;
+        font-size: .6em;
+        font-weight: 600;
     }
 }
