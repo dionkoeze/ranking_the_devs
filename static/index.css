@@ -78,6 +78,10 @@ h3 {
   border-bottom: 0.2em solid #247BA0;
   transition: all 0.2s;
 }
+.scheduler__field--invalid {
+  border-bottom: 0.2em solid #FF1654;
+  transition: all 0.2s;
+}
 .scheduler__submit {
   color: #FF1654;
   background-color: #70C1B3;

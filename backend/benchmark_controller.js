@@ -16,7 +16,7 @@ module.exports = (bus) => {
             url: req.body.url,
         })
 
-        bus.once(id, (success) => {
+        bus.once(`scheduled ${id}`, (success) => {
             console.log(id, success)
             if (success) res.status(201).end()
             else res.status(300).send('url already scheduled')

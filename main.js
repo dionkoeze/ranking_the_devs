@@ -1,3 +1,5 @@
+require('dotenv').config()
+
 const path = require('path')
 const events = require('events')
 
@@ -7,7 +9,8 @@ const express = require('express')
 const app = express()
 const http = require('http')
 const server = http.createServer(app)
-const body_parser = require('body-parser')
+
+const mongoose = require('mongoose')
 
 const { Server } = require("socket.io");
 const io = new Server(server);
@@ -15,12 +18,15 @@ const io = new Server(server);
 const bus = new events.EventEmitter()
 
 const benchmark_controller = require('./backend/benchmark_controller')(bus)
-const scheduler = require('./backend/scheduler')(bus)
-const statistics = require('./backend/statistics')(bus)
+
+// register all event listeners
+require('./backend/benchmark')(bus)
+require('./backend/scheduler')(bus)
+require('./backend/statistics')(bus)
 
 
 // register express middleware
-app.use(body_parser.json())
+app.use(express.json())
 
 
 // register express routers
@@ -108,4 +114,14 @@ server.listen(port, () => {
     console.log(`listening on *:${port}`)
 
     bus.emit('online')
+
+    // bus.emit('test')
+})
+
+
+// connect mongoose
+mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWD}@cluster0.gwez9.mongodb.net/Cluster0`, {
+    retryWrites: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
 })

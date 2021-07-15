@@ -1,14 +1,41 @@
 const m = require('mithril')
 
+const url_regex = new RegExp(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi)
+
 const scheduler = {
-    view() {
+    oninit(vnode) {
+        vnode.state.valid = true
+        vnode.state.pristine = true
+    },
+    view(vnode) {
+        console.log(vnode.state)
+        // DEZE COMPONENT HERSCHRIJVING NAAR VOORBEELD VAN MITHRIL IN FIREFOX
         return m('div', {class: 'scheduler'}, [
             m('h3', {class: 'scheduler__title'}, 'Submit your url'),
             m('div', {class: 'scheduler__input'}, [
                 // TODO input validation while typing
-                m('input', {class: 'scheduler__field', placeholder: 'https://example.com'}, ''),
+                m('input', {
+                    class: 'scheduler__field'
+                        + ' ' + (!vnode.state.valid ? 'scheduler__field--invalid' : '')
+                        + ' ' + (vnode.state.pristine ? 'scheduler__field--pristine' : ''),
+                    placeholder: 'https://example.com',
+                    oninput(e) {
+                        const url = e.target.value
+                        console.log('new url', url)
+                        vnode.state.valid = url_regex.test(url)
+                        vnode.state.pristine = false
+                    },
+                }, ''),
                 // TODO submit when button is clicked
-                m('button', {class: 'scheduler__submit', type: 'submit'}, 'Run!'),
+                m('button', {
+                    class: 'scheduler__submit', 
+                    type: 'submit', 
+                    onclick() {
+
+                        vnode.state.valid = true
+                        vnode.state.pristine = true
+                    }
+                }, 'Run!'),
                 // TODO feedback to user when response arrives
             ])
         ])

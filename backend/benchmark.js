@@ -1,163 +1,168 @@
-const uuid = require('uuid').v4
+const {performance} = require('perf_hooks')
 const axios = require('axios')
+const lm = require('ml-levenberg-marquardt')
 
-module.exports = (bus) => {
-    class BenchmarkPart {
-        constructor(config, children) {
-            this.config = config
-            this.children = children
-            this.done = false
-        }
-    
-        get size() {
-            return this.children.reduce((acc, child) => acc + child.size, 0)
-        }
-    
-        get progress() {
-            return this.children.reduce((acc, child) => acc + child.done, 0)
-        }
-    
-        async run(url) {
-            const request = await this.config.test()
-            if (request != null) {
-                axios.request({
-                    ...request,
-                    url: `${url}/${request.url}`,
-                })
-            }
-    
-            this.config.result = []
-    
-            for (let child of this.children) {
-                const start = new Date()
-                const result = await child.run()
-                const end = new Date()
-                this.config.result.push({
-                    ...result,
-                    time: end - start,
-                })
-            }
-    
-            this.done = true
-            bus.emit('update progress')
-    
-            return this.config.report()
-        }
+const { empty_report } = require('./report')
+
+const sample_sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600, 51200, 102400, 204800, 409600]
+
+function determine_big_o(ns, times) {
+
+}
+
+const lookup = {
+
+}
+
+const range = {
+
+}
+
+const other = {
+
+}
+
+const generators = {
+    lookup,
+    range,
+    other,
+}
+
+class BenchmarkRunner {
+    constructor(url, id, benchmark, report) {
+        this.id = id
+        this.benchmark = benchmark
+        this.generator = generators[benchmark]
+        this.report = report
+        this.benchmark = this.report.benchmarks[this.benchmark]
+        this.axios = axios.create({
+            baseURL: url,
+            timeout: 10000,
+        })
+        this.progress = 0
     }
-    
-    class Benchmark {
-        constructor(url, root) {
-            this.url = url
-            this.root = root
-        }
 
-        async check_accepting(nonce) {
-            const response = await axios.post(`${url}/benchmark`, nonce)
-            return nonce === response
-        }
+    stop() {
+        this.progress = this.size
+    }
 
-        async run(id) {
-            if (await this.check_accepting(id)) {
-                await this.root.run(this.url)
+    async run(cb) {
+        for (let n of sample_sizes) {
+            const {data_url, data, req_url, requests, corrects} = await this.generator(n)
 
-                // TODO store benchmark in database (id, time)
-            } else {
-                // TODO store failure in database (id, time)
+            const init_start = performance.now()
+            try {
+                await this.axios.post(data_url, data)
+            } catch (error) {
+                this.benchmark.error = error.message
+                await this.report.save()
+                return this.stop()
             }
+            const init_end = performance.now()
+
+            this.benchmark.measurements.push({
+                init_time : init_end - init_start,
+                n,
+                times: [],
+            })
             
-            bus.emit('benchmark done')
+            await this.report.save()
+
+            this.progress += 1
+
+            // give benchmarking an opportunity to emit events on the bus
+            cb()
+
+            // the number of requests determines the statistical sample size
+            for (let i = 0; i < requests.length; i++) {
+                const request = requests[i]
+                const correct = corrects[i]
+
+                const start = performance.now()
+                const response = await this.axios.get(req_url, {params: request})
+                const end = performance.now()
+    
+                if (JSON.stringify(response) === JSON.stringify(correct)) {
+                    this.benchmark.measurements[this.benchmark.measurements - 1].times.push(end - start)
+                    
+                    await this.report.save()
+                    
+                    this.progress += 1
+                } else {
+                    this.benchmark.error = `incorrect answer: expected ${correct}, received ${response}`
+
+                    await this.report.save()
+
+                    return this.stop()
+                }
+
+                // give benchmarking an opportunity to emit events on the bus
+                cb()
+            }
         }
+
+        // TODO determine scaling and save to db
+
+        this.progress += 1
+    }
+
+    get size() {
+        return sample_sizes.length + 2 // +1 for initializing data, +1 for determining scaling
+    }
+
+    get done() {
+        return this.progress
     }
 }
 
+module.exports = (bus) => {
+    bus.on('start test', (handle) => {
+        const report = empty_report()
+        report.id = handle.id
+        report.url = handle.url
+        
+        // TODO send request to confirm expecting benchmark
+        try {
+            const confirmation = this.axios.post('/benchmark', {id: this.id})
+            if (confirmation.id !== handle.id) throw Error("replied with incorrect id")
+            if (!confirmation.accepting) throw Error("backend is not accepting")
+        } catch (error) {
+            report.error = `failed confirmation: ${error.message}`
+            bus.emit('test done', handle.id)
+            return
+        }
 
+        const benchmarks = []
 
-// class SortStage {
-//     constructor() {
+        // loop over properties in schema (mongoose defines more)
+        for (let benchmark in report.benchmarks) {
+            if (report.benchmarks.hasOwnProperty(benchmark)) {
+                console.log(benchmark)
+                if (benchmark in generators) {
+                    benchmarks.push(new BenchmarkRunner(handle.url, handle.id, benchmark, report))
+                } else {
+                    console.error(`${benchmark} is not found`)
+                }
+            }
+        }
 
-//     }
+        setImmediate(async () => {
+            for (let benchmark of benchmarks) {
+                await benchmark.run(() => bus.emit('update progress'))
+            }
+            bus.emit('test done', handle.id)
+        })
 
-//     async init() {
+        Object.defineProperty(handle, 'size', {
+            get() {
+                return benchmarks.reduce((acc, cur) => acc + cur.size, 0)
+            }
+        })
 
-//     }
-
-//     get name() {
-
-//     }
-
-//     get data() {
-
-//     }
-
-//     get endpoint() {
-
-//     }
-
-//     get params() {
-
-//     }
-
-//     async process(response, report) {
-
-//     }
-// }
-
-// module.exports = (bus) => {
-//     class Benchmark {
-//         constructor(url, stages) {
-//             this.stages = stages
-//             this.done = 0
-//             this.report = {
-//                 url,
-//                 status: {
-//                     label: 'running',
-//                     success: false,
-//                 },
-//                 stages: {},
-//             }
-//         }
-
-//         get progress() {
-//             return `${this.done} / ${this.stages.length}`
-//         }
-
-//         async check_accepting() {
-//             const nonce = uuid()
-//             const response = await axios.post(`${url}/benchmark`, nonce)
-//             return nonce === response
-//         }
-    
-//         async run() {
-//             if (!await check_accepting()) {
-//                 this.done = this.stages.length
-
-//                 this.report.success = {
-//                     label: 'failed',
-//                     success: false,
-//                     reason: 'url does not expect benchmark',
-//                 }
-
-//                 bus.emit('benchmark done')
-                
-//                 return
-//             }
-
-//             for (let stage of this.stages) {
-//                 // set stage name in report object
-
-//                 await stage.init()
-//                 await axios.post(`${url}/data`, stage.data)
-//                 const response = await axios.get(`${url}/${stage.endpoint}`, {params: stage.params})
-//                 const result = await stage.check(response)
-//                 this.report.stages[stage.name] = result // TODO this does not handle scaling testing...?
-//                 // TODO update report with process function of stage
-
-//                 this.done += 1
-
-//                 bus.emit('update progress')
-//             }
-
-//             bus.emit('benchmark done')
-//         }
-//     }
-// }
+        Object.defineProperty(handle, 'done', {
+            get() {
+                return benchmarks.reduce((acc, cur) => acc + cur.done, 0)
+            }
+        })
+    })
+}

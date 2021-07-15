@@ -11,8 +11,92 @@
 
 ## Design
 
+### Development
+
 The application is developed in one repo. The frontend app is hosted by the same node instance that performs the tests. This instance also sends all push notifications to all connected clients when new data is ready.
 
+### Persistence
+
 A mongo atlas instance is used to persist test reports. Partial test results are not persisted, only kept in memory while the test is running.
+
+### Testing
+
+Testing should be done in sequence. First a confirmation that it is a testable backend is sent. This has the following form and requires a response like that below. The response wants the random id echoed and confirmation that it accepts a test.
+```json
+Request: POST /benchmark
+{
+    "id": "123e4567-e89b-12d3-a456-426614174000"
+}
+```
+
+```json
+Response
+{
+    "id": "123e4567-e89b-12d3-a456-426614174000",
+    "accepting": true
+}
+```
+
+Testing further requires sequentially firing specific requests. 
+
+Can this be done with dynamic promise chaining?
+
+```js
+const report = {
+    id: "123e4567-e89b-12d3-a456-426614174000",
+    url: "http://example.com",
+    error: "failed confirmation",
+    benchmarks: {
+        lookup: {
+            error: {
+                type: "wrong answer",
+                type: "timeout",
+                message: "...",
+            },
+        },
+        sorted_range: {
+            scaling: "logarithmic",
+            big_o:  "O(log(n))",
+            measurements: [
+                {
+                    n: 1,
+                    average: 0.3235423,
+                    variance: 0.054324,
+                    times: [],
+                    init_time: 1.4524342,
+                }, {
+                    n: 2,
+                    average: 0.64283482,
+                    variance: 0.0434544,
+                    times: [],
+                    init_time: 1.32134412,
+                }
+            ]
+        },
+        other_case: {
+            measurements: [],
+        }
+    }
+}
+
+make_benchmark() // fires POST to /testing
+    .then(lookup_test)
+    .then(sorted_range_test)
+
+function lookup_test() {
+
+}
+
+function lookup(data) {
+
+}
+```
+
+
+### Test cases
+
+Test cases should be randomly generated to avoid precomputation. The testing framework should be able to confirm a correct answer in less time than the tested backend needs to compute the correct answer. Otherwise we do not have enough performance. 
+
+The only feasible solution is to generate an answer and scramble it to produce the input data for the backend. 
 
 ## Time planning

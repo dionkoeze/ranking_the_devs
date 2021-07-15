@@ -55,6 +55,12 @@
             border-bottom: .2em solid $color-A;
             transition: all .2s;
         }
+
+        &--invalid {
+            border-bottom: .2em solid $color-E;
+
+            transition: all .2s;
+        }
     }
 
     &__submit {
