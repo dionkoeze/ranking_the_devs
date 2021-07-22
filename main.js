@@ -114,8 +114,6 @@ server.listen(port, () => {
     console.log(`listening on *:${port}`)
 
     bus.emit('online')
-
-    // bus.emit('test')
 })
 
 

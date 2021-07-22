@@ -67,8 +67,6 @@ const queue = []
 const processing = []
 
 module.exports = (bus) => {
-    bus.on('test', dispatch)
-
     function dispatch() {
         const handle = dequeue()
 

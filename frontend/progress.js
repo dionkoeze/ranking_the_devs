@@ -1,39 +1,92 @@
 const m = require('mithril')
 
-const url_regex = new RegExp(/https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)/gi)
+const url_regex = new RegExp(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)
+
+const scheduler_state = {
+    url: '',
+    pristine: true,
+    valid: false,
+    waiting: false,
+    success: false,
+    error: false,
+    message: '',
+    set_url(value) {
+        if (value.search("http://") === -1 && value.search("https://") === -1) {
+            this.url = "https://" + value
+        } else {
+            this.url = value
+        }
+        this.pristine = false
+        // this.valid = url_regex.test(this.url)
+        this.valid = true
+    },
+    status_waiting() {
+        this.waiting = true
+    },
+    status_success() {
+        this.waiting = false
+        this.success = true
+        setTimeout(() => {
+            this.success = false
+            m.redraw()
+        }, 2000);
+    },
+    status_error(message) {
+        this.waiting = false
+        this.error = true
+        this.message = message
+        setTimeout(() => {
+            this.error = false
+            m.redraw()
+        }, 2000);
+    },
+    reset() {
+        this.pristine = true
+        this.valid = false
+        this.url = ''
+    },
+}
 
 const scheduler = {
-    oninit(vnode) {
-        vnode.state.valid = true
-        vnode.state.pristine = true
-    },
-    view(vnode) {
-        console.log(vnode.state)
-        // DEZE COMPONENT HERSCHRIJVING NAAR VOORBEELD VAN MITHRIL IN FIREFOX
+    view() {
         return m('div', {class: 'scheduler'}, [
             m('h3', {class: 'scheduler__title'}, 'Submit your url'),
             m('div', {class: 'scheduler__input'}, [
-                // TODO input validation while typing
                 m('input', {
-                    class: 'scheduler__field'
-                        + ' ' + (!vnode.state.valid ? 'scheduler__field--invalid' : '')
-                        + ' ' + (vnode.state.pristine ? 'scheduler__field--pristine' : ''),
+                    class: 'scheduler__field ' + (!scheduler_state.valid && !scheduler_state.pristine ? 'scheduler__field--invalid' : ''),
                     placeholder: 'https://example.com',
+                    value: scheduler_state.url,
                     oninput(e) {
-                        const url = e.target.value
-                        console.log('new url', url)
-                        vnode.state.valid = url_regex.test(url)
-                        vnode.state.pristine = false
+                        scheduler_state.set_url(e.target.value)
                     },
                 }, ''),
+                scheduler_state.waiting ? m('div', {
+                    class: 'scheduler__spinner',
+                }, '') : undefined,
+                scheduler_state.success ? m('p', {
+                    class: 'scheduler__success',
+                }, 'url scheduled!') : undefined,
+                scheduler_state.error ? m('p', {
+                    class: 'scheduler__error',
+                }, scheduler_state.message) : undefined,
                 // TODO submit when button is clicked
                 m('button', {
                     class: 'scheduler__submit', 
-                    type: 'submit', 
-                    onclick() {
-
-                        vnode.state.valid = true
-                        vnode.state.pristine = true
+                    disabled: !scheduler_state.valid,
+                    onclick(e) {
+                        console.log(e)
+                        e.preventDefault()
+                        scheduler_state.status_waiting()
+                        m.request({
+                            method: 'POST',
+                            url: '/benchmark',
+                            body: {url: scheduler_state.url}
+                        })
+                        .then(() => {
+                            scheduler_state.status_success()
+                            scheduler_state.reset()
+                        })
+                        .catch((err) => scheduler_state.status_error(err.message))
                     }
                 }, 'Run!'),
                 // TODO feedback to user when response arrives
