@@ -3,9 +3,11 @@ const m = require('mithril')
 const url_regex = new RegExp(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)
 
 const scheduler_state = {
-    url: '',
+    // url: '',
+    url: 'http://localhost:4321', // for testing
     pristine: true,
-    valid: false,
+    // valid: false,
+    valid: true, // for testing
     waiting: false,
     success: false,
     error: false,
@@ -38,7 +40,7 @@ const scheduler_state = {
         setTimeout(() => {
             this.error = false
             m.redraw()
-        }, 2000);
+        }, 5000);
     },
     reset() {
         this.pristine = true
@@ -69,12 +71,10 @@ const scheduler = {
                 scheduler_state.error ? m('p', {
                     class: 'scheduler__error',
                 }, scheduler_state.message) : undefined,
-                // TODO submit when button is clicked
                 m('button', {
                     class: 'scheduler__submit', 
                     disabled: !scheduler_state.valid,
                     onclick(e) {
-                        console.log(e)
                         e.preventDefault()
                         scheduler_state.status_waiting()
                         m.request({
@@ -86,10 +86,12 @@ const scheduler = {
                             scheduler_state.status_success()
                             scheduler_state.reset()
                         })
-                        .catch((err) => scheduler_state.status_error(err.message))
+                        .catch((err) => {
+                            scheduler_state.status_error(err.message)
+                            // scheduler_state.reset()
+                        })
                     }
                 }, 'Run!'),
-                // TODO feedback to user when response arrives
             ])
         ])
     }

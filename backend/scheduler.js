@@ -73,9 +73,9 @@ module.exports = (bus) => {
         handle.started = new Date()
         
         processing.push(handle)
-        bus.emit('update progress')
-        
         bus.emit('start test', handle)
+        
+        bus.emit('update progress')
     }
     
     function schedule() {
@@ -94,8 +94,6 @@ module.exports = (bus) => {
             ...req,
             scheduled: new Date(),
         })
-
-        console.log(`${req.url} scheduled`)
     }
     
     function dequeue() {
@@ -144,7 +142,10 @@ module.exports = (bus) => {
     })
 
     bus.on('test done', (id) => {
-        // TODO update queue and processing arrays
+        const idx = processing.findIndex((handle) => handle.id === id)
+        if (idx !== -1) {
+            processing.splice(idx, 1)
+        }
 
         bus.emit('update progress')
         schedule()

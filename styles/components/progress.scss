@@ -39,7 +39,8 @@
 }
 
 .scheduler {
-    // position: relative;
+    position: relative;
+    margin-bottom: 3em;
 
     &__input {
         display: flex;
@@ -102,9 +103,31 @@
         border-radius: 50%;
         animation: spin .4s infinite linear;
     }
+
+    &__success, &__error {
+        position: absolute;
+        top: 5em;
+        z-index: 100;
+
+        padding: .5em 1em;
+
+        border-radius: .5em;
+        background-color: $color-B;
+    }
+
+    &__success {
+        color: $color-A;
+    }
+
+    &__error {
+        color: $color-E;
+
+    }
 }
 
 .processing {
+    margin-bottom: 3em;
+
     &__items {
         list-style: none;
     }

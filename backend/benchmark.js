@@ -1,167 +1,71 @@
-const {performance} = require('perf_hooks')
-const axios = require('axios')
 const lm = require('ml-levenberg-marquardt')
+const axios = require('axios')
 
-const { empty_report } = require('./report')
+const Report = require('./report')
 
-const sample_sizes = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 200, 400, 800, 1600, 3200, 6400, 12800, 25600, 51200, 102400, 204800, 409600]
+const {Node} = require('./benchmarks/node')
+const {create_confirmation_node} = require('./benchmarks/confirmation')
+const {create_average_stopwatch, IncorrectResponseError} = require('./benchmarks/stopwatch')
 
-function determine_big_o(ns, times) {
-
-}
-
-const lookup = {
-
-}
-
-const range = {
-
-}
-
-const other = {
-
-}
-
-const generators = {
-    lookup,
-    range,
-    other,
-}
-
-class BenchmarkRunner {
-    constructor(url, id, benchmark, report) {
-        this.id = id
-        this.benchmark = benchmark
-        this.generator = generators[benchmark]
-        this.report = report
-        this.benchmark = this.report.benchmarks[this.benchmark]
-        this.axios = axios.create({
-            baseURL: url,
-            timeout: 10000,
-        })
-        this.progress = 0
-    }
-
-    stop() {
-        this.progress = this.size
-    }
-
-    async run(cb) {
-        for (let n of sample_sizes) {
-            const {data_url, data, req_url, requests, corrects} = await this.generator(n)
-
-            const init_start = performance.now()
-            try {
-                await this.axios.post(data_url, data)
-            } catch (error) {
-                this.benchmark.error = error.message
-                await this.report.save()
-                return this.stop()
-            }
-            const init_end = performance.now()
-
-            this.benchmark.measurements.push({
-                init_time : init_end - init_start,
-                n,
-                times: [],
-            })
-            
-            await this.report.save()
-
-            this.progress += 1
-
-            // give benchmarking an opportunity to emit events on the bus
-            cb()
-
-            // the number of requests determines the statistical sample size
-            for (let i = 0; i < requests.length; i++) {
-                const request = requests[i]
-                const correct = corrects[i]
-
-                const start = performance.now()
-                const response = await this.axios.get(req_url, {params: request})
-                const end = performance.now()
-    
-                if (JSON.stringify(response) === JSON.stringify(correct)) {
-                    this.benchmark.measurements[this.benchmark.measurements - 1].times.push(end - start)
-                    
-                    await this.report.save()
-                    
-                    this.progress += 1
-                } else {
-                    this.benchmark.error = `incorrect answer: expected ${correct}, received ${response}`
-
-                    await this.report.save()
-
-                    return this.stop()
-                }
-
-                // give benchmarking an opportunity to emit events on the bus
-                cb()
-            }
-        }
-
-        // TODO determine scaling and save to db
-
-        this.progress += 1
-    }
-
-    get size() {
-        return sample_sizes.length + 2 // +1 for initializing data, +1 for determining scaling
-    }
-
-    get done() {
-        return this.progress
-    }
-}
 
 module.exports = (bus) => {
-    bus.on('start test', (handle) => {
-        const report = empty_report()
+    require('./benchmarks/node').init(bus)
+
+    bus.on('start test', async (handle) => {
+        const report = new Report()
         report.id = handle.id
         report.url = handle.url
-        
-        // TODO send request to confirm expecting benchmark
-        try {
-            const confirmation = this.axios.post('/benchmark', {id: this.id})
-            if (confirmation.id !== handle.id) throw Error("replied with incorrect id")
-            if (!confirmation.accepting) throw Error("backend is not accepting")
-        } catch (error) {
-            report.error = `failed confirmation: ${error.message}`
-            bus.emit('test done', handle.id)
-            return
-        }
 
-        const benchmarks = []
+        // TODO build up benchmarking tree here
+        const requests = new Array(10)
+        requests.fill({}, 0, 10)
+        const expecteds = new Array(10)
+        expecteds.fill({scaling: 'quadratic'}, 0, 10)
+        const average_stopwatch_node = create_average_stopwatch(handle, 'quadratic', requests, expecteds)
 
-        // loop over properties in schema (mongoose defines more)
-        for (let benchmark in report.benchmarks) {
-            if (report.benchmarks.hasOwnProperty(benchmark)) {
-                console.log(benchmark)
-                if (benchmark in generators) {
-                    benchmarks.push(new BenchmarkRunner(handle.url, handle.id, benchmark, report))
+        const average_node = new Node([average_stopwatch_node], {
+            async after(results) {
+                console.log(results)
+                report.benchmarks.speed.measurements = results[0]
+                await report.save()
+            },
+            async error(err) {
+                if (err instanceof IncorrectResponseError) {
+                    report.benchmarks.speed.error.message = err.message
+                    report.benchmarks.speed.error.expected = err.expected
+                    report.benchmarks.speed.error.received = err.received
+                    await report.save()
                 } else {
-                    console.error(`${benchmark} is not found`)
+                    throw err
                 }
-            }
-        }
+            },
+        })
+
+        const set_data_node = new Node([], {
+            async after() {
+                await axios.post(`${handle.url}/data`, {n: 40})
+            },
+        })
+
+        const confirmation_node = create_confirmation_node(handle, report, [set_data_node, average_node])
+    
+        const root = new Node([confirmation_node])
 
         setImmediate(async () => {
-            for (let benchmark of benchmarks) {
-                await benchmark.run(() => bus.emit('update progress'))
-            }
+            await root.run()
+
             bus.emit('test done', handle.id)
         })
 
         Object.defineProperty(handle, 'size', {
             get() {
-                return benchmarks.reduce((acc, cur) => acc + cur.size, 0)
+                return root.size()
             }
         })
 
         Object.defineProperty(handle, 'done', {
             get() {
-                return benchmarks.reduce((acc, cur) => acc + cur.done, 0)
+                return root.done()
             }
         })
     })

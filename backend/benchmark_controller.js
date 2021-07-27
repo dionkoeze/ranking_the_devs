@@ -6,20 +6,16 @@ module.exports = (bus) => {
     router.post('/benchmark', (req, res) => {
         // TODO check for url with regex
         if (typeof req.body.url !== 'string') {
-            res.status(400).send('url should be a url')
+            res.status(400).json(`not a valid url`)
+            return 
         }
 
         const id = uuid()
 
-        console.log({
-            id, 
-            url: req.body.url,
-        })
-
         bus.once(`scheduled ${id}`, (success) => {
             console.log(id, success)
             if (success) res.status(201).end()
-            else res.status(300).send('url already scheduled')
+            else res.status(300).json('already scheduled')
         })
 
         bus.emit('register url', {

@@ -71,6 +71,10 @@ h3 {
   padding: 0.5em;
 }
 
+.scheduler {
+  position: relative;
+  margin-bottom: 3em;
+}
 .scheduler__input {
   display: flex;
   align-items: center;
@@ -117,7 +121,24 @@ h3 {
   border-radius: 50%;
   animation: spin 0.4s infinite linear;
 }
+.scheduler__success, .scheduler__error {
+  position: absolute;
+  top: 5em;
+  z-index: 100;
+  padding: 0.5em 1em;
+  border-radius: 0.5em;
+  background-color: #70C1B3;
+}
+.scheduler__success {
+  color: #247BA0;
+}
+.scheduler__error {
+  color: #FF1654;
+}
 
+.processing {
+  margin-bottom: 3em;
+}
 .processing__items {
   list-style: none;
 }
