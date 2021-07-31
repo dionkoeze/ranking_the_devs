@@ -21,7 +21,7 @@ function equal(lhs, rhs) {
 }
 
 function create_single_stopwatch(handle, endpoint, request, expected) {
-    return new Node([], {
+    return new Node(handle.id, [], {
         async after() {
             const start = performance.now()
             const response = await axios.get(`${handle.url}/${endpoint}`, {params: request})
@@ -44,7 +44,7 @@ function create_average_stopwatch(handle, endpoint, requests, expecteds) {
         children.push(create_single_stopwatch(handle, endpoint, request, expected))
     }
 
-    return new Node(children)
+    return new Node(handle.id, children)
 }
 
 module.exports = {

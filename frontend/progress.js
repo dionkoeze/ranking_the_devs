@@ -1,53 +1,6 @@
 const m = require('mithril')
 
-const url_regex = new RegExp(/(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g)
-
-const scheduler_state = {
-    // url: '',
-    url: 'http://localhost:4321', // for testing
-    pristine: true,
-    // valid: false,
-    valid: true, // for testing
-    waiting: false,
-    success: false,
-    error: false,
-    message: '',
-    set_url(value) {
-        if (value.search("http://") === -1 && value.search("https://") === -1) {
-            this.url = "https://" + value
-        } else {
-            this.url = value
-        }
-        this.pristine = false
-        // this.valid = url_regex.test(this.url)
-        this.valid = true
-    },
-    status_waiting() {
-        this.waiting = true
-    },
-    status_success() {
-        this.waiting = false
-        this.success = true
-        setTimeout(() => {
-            this.success = false
-            m.redraw()
-        }, 2000);
-    },
-    status_error(message) {
-        this.waiting = false
-        this.error = true
-        this.message = message
-        setTimeout(() => {
-            this.error = false
-            m.redraw()
-        }, 5000);
-    },
-    reset() {
-        this.pristine = true
-        this.valid = false
-        this.url = ''
-    },
-}
+const {scheduler_state, search_state} = require('./state')
 
 const scheduler = {
     view() {
@@ -107,9 +60,14 @@ function processing_item(item) {
     return m('li', {class: 'processing-item', key: item.id}, [
         m('div', {class: 'processing-item__info'}, [
             m('p', {class: 'processing-item__url'}, item.url),
-            m('button', {class: 'processing-item__id'}, item.id), // TODO make id clickable and copy it to clipboard (change color on hover)
-            m('p', {class: 'processing-item__started'}, item.started),
-            m('p', {class: 'processing-item__scheduled'}, item.scheduled),
+            m('button', {
+                class: 'processing-item__id',
+                onclick() {
+                    search_state.set_value(item.id)
+                },
+            }, item.id),
+            m('p', {class: 'processing-item__started'}, item.started ? new Date(item.started).toLocaleString() : ''),
+            m('p', {class: 'processing-item__scheduled'}, item.scheduled ? new Date(item.scheduled).toLocaleString() : ''),
         ]),
         m('p', {class: 'processing-item__progress'}, [
             m('span', {class: 'processing-item__done'}, item.done),
@@ -135,28 +93,16 @@ socket.on('queue', (data) => {
 })
 
 function queue_item(item) {
-    let show_copied = false // TODO message does not show up when button is clicked
-
-    function show_message() {
-        show_copied = true
-
-        console.log(show_copied)
-        console.log((show_copied ? m('p', {class: 'queue-item__copied'}, 'Copied to clipboard!') : undefined))
-
-        setTimeout(() => {
-            show_copied = false
-            console.log(show_copied)
-            console.log((show_copied ? m('p', {class: 'queue-item__copied'}, 'Copied to clipboard!') : undefined))
-            m.redraw()
-        }, 3000)
-    }
-
     return m('li', {class: 'queue-item', key: item.id}, 
         m('div', {class: 'queue-item__content'}, [
             m('p', {class: 'queue-item__url'}, item.url),
-            m('button', {class: 'queue-item__id', onclick: show_message}, item.id), // TODO make id clickable and copy it to clipboard (change color on hover)
-            (show_copied ? m('p', {class: 'queue-item__copied'}, 'Copied to clipboard!') : undefined),
-            m('p', {class: 'queue-item__scheduled'}, item.scheduled)
+            m('button', {
+                class: 'queue-item__id', 
+                onclick() {
+                    search_state.set_value(item.id)
+                },
+            }, item.id), // TODO make id clickable and copy it to clipboard (change color on hover)
+            m('p', {class: 'queue-item__scheduled'}, new Date(item.scheduled).toLocaleString())
         ])
     )
 }

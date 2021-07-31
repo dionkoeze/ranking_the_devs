@@ -67,10 +67,16 @@ const ReportSchema = new Schema({
             validator: (v) => validate(v) && version(v) === 4,
             message: (props) => `${props.value} is not a valid id (uuid v4)`,
         },
+        index: true,
     },
     url: {
         type: String,
-        required: [true, 'url is required in report']
+        required: [true, 'url is required in report'],
+        index: true,
+    },
+    time: {
+        type: Date,
+        required: [true, 'starting time is required in report'],
     },
     error: {
         message: String,

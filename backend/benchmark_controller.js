@@ -3,6 +3,7 @@ const router = require('express').Router()
 
 // only scheduling is done through REST api, as we want meaningful errors
 module.exports = (bus) => {
+    // TODO implement exponential backoff!
     router.post('/benchmark', (req, res) => {
         // TODO check for url with regex
         if (typeof req.body.url !== 'string') {

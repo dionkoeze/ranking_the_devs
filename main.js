@@ -3,6 +3,8 @@ require('dotenv').config()
 const path = require('path')
 const events = require('events')
 
+// const {version, validate} = require('uuid')
+
 const favicon = require('serve-favicon')
 
 const express = require('express')
@@ -11,6 +13,7 @@ const http = require('http')
 const server = http.createServer(app)
 
 const mongoose = require('mongoose')
+const Report = require('./backend/report')
 
 const { Server } = require("socket.io");
 const io = new Server(server);
@@ -18,6 +21,7 @@ const io = new Server(server);
 const bus = new events.EventEmitter()
 
 const benchmark_controller = require('./backend/benchmark_controller')(bus)
+const search_controller = require('./backend/search_controller')
 
 // register all event listeners
 require('./backend/benchmark')(bus)
@@ -72,37 +76,69 @@ io.on('connection', (socket) => {
     socket.emit('queue', queue_state)
     socket.emit('leaderboard', leaderboard_state)
 
-    function build_notifyer(id) {
+    function build_benchmark_notifyer(id) {
         return async function() {
-            // TODO fetch benchmark with id from db
-            // socket.emit(id, benchmark)
-            socket.emit(id, id)
+            const report = await search_controller.get_benchmark(id)
+            console.log(report)
+            socket.emit('benchmark', report)
         }
     }
 
-    const notifyers = new Map()
+    function build_url_notifyer(url) {
+        return async function() {
+            const reports = await search_controller.get_url(url)
+            socket.emit('url', reports)
+        }
+    }
 
-    socket.on('get benchmark', (id) => {
-        if (!notifyers.has(id)) {
-            const notifyer = build_notifyer(id)
-            notifyers.set(id, notifyer)
+    function attach_notifyer(id, map, create_notifyer) {
+        if (!map.has(id)) {
+            const notifyer = create_notifyer(id)
+            map.set(id, notifyer)
             bus.on(id, notifyer)
             notifyer()
         }
+    }
+
+    function detach_notifyer(id, map) {
+        if (map.has(id)) {
+            bus.off(id, map.get(id))
+            map.delete(id)
+        }
+    }
+
+    const benchmark_notifyers = new Map()
+    const url_notifyers = new Map()
+
+    socket.on('get url', (url) => {
+        attach_notifyer(url, url_notifyers, build_url_notifyer)
+    })
+
+    socket.on('stop url', (url) => {
+        detach_notifyer(url, url_notifyers)
+    })
+
+    socket.on('get benchmark', (id) => {
+        console.log(id)
+        attach_notifyer(id, benchmark_notifyers, build_benchmark_notifyer)
     })
 
     socket.on('stop benchmark', (id) => {
-        if (notifyers.has(id)) {
-            bus.off(id, notifyers.get(id))
-            notifyers.delete(id)
-        }
+        detach_notifyer(id, benchmark_notifyers)
+    })
+
+    socket.on('search', async (phrase, reply) => {
+        reply(await search_controller.search(phrase))
     })
 
     socket.on('disconnect', () => {
         console.log(`${socket.id} disconnected`)
 
-        for (let [id, notifyer] of notifyers) {
+        for (let [id, notifyer] of benchmark_notifyers) {
             bus.off(id, notifyer)
+        }
+        for (let [url, notifyer] of url_notifyers) {
+            bus.off(url, notifyer)
         }
     })
 })
@@ -122,4 +158,5 @@ mongoose.connect(`mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PA
     retryWrites: true,
     useNewUrlParser: true,
     useUnifiedTopology: true,
+    useCreateIndex: true,
 })

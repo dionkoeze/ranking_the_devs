@@ -2,9 +2,6 @@ window.socket = require('socket.io-client')()
 
 const m = require('mithril')
 
-socket.on('queue', (data) => console.log('queue', data))
-socket.on('processing', (data) => console.log('processing', data))
-
 const title = require('./title')
 const leaderboard = require('./leaderboard')
 const queue = require('./progress')

@@ -15,6 +15,11 @@ module.exports = (bus) => {
         const report = new Report()
         report.id = handle.id
         report.url = handle.url
+        report.time = new Date()
+
+        // save initial data and let clients know this benchmark now exists
+        await report.save()
+        bus.emit(handle.url)
 
         // TODO build up benchmarking tree here
         const requests = new Array(10)
@@ -23,7 +28,7 @@ module.exports = (bus) => {
         expecteds.fill({scaling: 'quadratic'}, 0, 10)
         const average_stopwatch_node = create_average_stopwatch(handle, 'quadratic', requests, expecteds)
 
-        const average_node = new Node([average_stopwatch_node], {
+        const average_node = new Node(handle.id, [average_stopwatch_node], {
             async after(results) {
                 console.log(results)
                 report.benchmarks.speed.measurements = results[0]
@@ -41,7 +46,7 @@ module.exports = (bus) => {
             },
         })
 
-        const set_data_node = new Node([], {
+        const set_data_node = new Node(handle.id, [], {
             async after() {
                 await axios.post(`${handle.url}/data`, {n: 40})
             },
@@ -49,7 +54,7 @@ module.exports = (bus) => {
 
         const confirmation_node = create_confirmation_node(handle, report, [set_data_node, average_node])
     
-        const root = new Node([confirmation_node])
+        const root = new Node(handle.id, [confirmation_node])
 
         setImmediate(async () => {
             await root.run()

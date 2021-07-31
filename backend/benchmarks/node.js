@@ -8,7 +8,8 @@ function init(newbus) {
 // A visited node is requested to run itself (before and after hook) and optionally pass data 
 // to the parent. The parent receives the data in an array in the after hook.
 class Node {
-    constructor(children, {before = undefined, after = undefined, error = undefined} = {}) {
+    constructor(id, children, {before = undefined, after = undefined, error = undefined} = {}) {
+        this.id = id
         this.children = children
         
         this.before_done = true
@@ -40,6 +41,7 @@ class Node {
             }
             this.before_done = true
             bus.emit('update progress')
+            bus.emit(this.id)
         }
 
         let results = []
@@ -56,6 +58,7 @@ class Node {
                 else throw err
             }
             bus.emit('update progress')
+            bus.emit(this.id)
         }
 
         if (this.after) {
@@ -67,6 +70,7 @@ class Node {
             }
             this.after_done = true
             bus.emit('update progress')
+            bus.emit(this.id)
         }
 
         return results

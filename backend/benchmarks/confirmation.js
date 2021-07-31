@@ -12,7 +12,7 @@ class ConfirmationError extends Error {
 }
 
 function create_confirmation_node(handle, report, children = []) {
-    return new Node(children, {
+    return new Node(handle.id, children, {
         async before() {
             const confirmation = await axios.post(`${handle.url}/benchmark`, {id: handle.id})
     
