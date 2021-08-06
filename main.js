@@ -79,7 +79,6 @@ io.on('connection', (socket) => {
     function build_benchmark_notifyer(id) {
         return async function() {
             const report = await search_controller.get_benchmark(id)
-            console.log(report)
             socket.emit('benchmark', report)
         }
     }
@@ -119,7 +118,6 @@ io.on('connection', (socket) => {
     })
 
     socket.on('get benchmark', (id) => {
-        console.log(id)
         attach_notifyer(id, benchmark_notifyers, build_benchmark_notifyer)
     })
 

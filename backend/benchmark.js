@@ -7,6 +7,8 @@ const {Node} = require('./benchmarks/node')
 const {create_confirmation_node} = require('./benchmarks/confirmation')
 const {create_average_stopwatch, IncorrectResponseError} = require('./benchmarks/stopwatch')
 
+const {average, stddev} = require('../math')
+
 
 module.exports = (bus) => {
     require('./benchmarks/node').init(bus)
@@ -30,8 +32,9 @@ module.exports = (bus) => {
 
         const average_node = new Node(handle.id, [average_stopwatch_node], {
             async after(results) {
-                console.log(results)
                 report.benchmarks.speed.measurements = results[0]
+                report.benchmarks.speed.average = average(results[0])
+                report.benchmarks.speed.stddev = stddev(results[0])
                 await report.save()
             },
             async error(err) {

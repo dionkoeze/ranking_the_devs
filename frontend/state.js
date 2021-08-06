@@ -55,6 +55,19 @@ const content_state = {
     url: [],
     is_id: false,
     is_url: false,
+    get info() {
+        return {
+            url: this.benchmark.url,
+            id: this.benchmark.id,
+            time: this.benchmark.time,
+        }
+    },
+    get_benchmark(name) {
+        return {
+            name, 
+            ...this.benchmark?.benchmarks?.[name],
+        }
+    },
     set_id(id) {
         this.clear()
         this.entity = id

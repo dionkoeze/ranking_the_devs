@@ -20,6 +20,7 @@
 
     &__field {
         font-size: 1.5em;
+        font-weight: 200;
         width: 100%;
 
         border: solid .2em transparent;
@@ -199,18 +200,67 @@
     grid-auto-flow: row dense;
     grid-template-columns: repeat(auto-fit, 10em);
     grid-auto-rows: 10em;
+
+    column-gap: .5em;
+    row-gap: .5em;
 }
 
 .benchmark-item {
-    grid-column: span 1;
-    grid-row: span 1;
+    background-color: $color-C;
+    
+    padding: .3em;
 
-    border: solid .5em orangered;
+    color: $color-A;
 }
 
-.benchmark-item-2 {
+.info {
+    grid-column: span 2;
+    grid-row: span 1;
+
+    overflow: hidden;
+
+    display: grid;
+    justify-items: center;
+
+    &__url {
+        outline: none;
+        border: none;
+        cursor: pointer;
+
+        color: currentColor;
+        background-color: $color-C;
+
+        font-size: 1.3em;
+        font-weight: 300;
+
+        &:hover {
+            color: $color-E;
+        }
+    }
+
+    &__id {
+        font-weight: 500;
+        font-size: .9em;
+    }
+}
+
+.average {
     grid-column: span 2;
     grid-row: span 2;
-    
-    border: solid .5em orangered;
+
+    display: grid;
+
+    &__name {
+        font-size: 1.5em;
+        text-align: center;
+
+        color: $color-E;
+    }
+
+    &__value {
+        font-weight: 500;
+        text-align: center;
+
+        color: $color-E;
+    }
 }

@@ -9,8 +9,6 @@ app.use(morgan('combined'))
 app.use(express.json())
 
 app.post('/benchmark', (req, res) => {
-    console.log(req.body)
-
     res.status(201).json({
         id: req.body.id,
         accepting: true,

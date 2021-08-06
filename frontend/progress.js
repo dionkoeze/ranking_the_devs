@@ -12,6 +12,7 @@ const scheduler = {
                     placeholder: 'https://example.com',
                     value: scheduler_state.url,
                     oninput(e) {
+                        e.preventDefault()
                         scheduler_state.set_url(e.target.value)
                     },
                 }, ''),

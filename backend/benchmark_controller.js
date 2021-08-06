@@ -14,7 +14,6 @@ module.exports = (bus) => {
         const id = uuid()
 
         bus.once(`scheduled ${id}`, (success) => {
-            console.log(id, success)
             if (success) res.status(201).end()
             else res.status(300).json('already scheduled')
         })

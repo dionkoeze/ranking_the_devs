@@ -1,63 +1,20 @@
 const {version, validate} = require('uuid')
 const {model, Schema} = require('mongoose')
 
-const TimeBenchmarkSchema = new Schema({
-    time: {
-        type: Number,
-        required: [true, 'time measurement is required']
-    },
-}, {
-    _id: false,
-})
-
-const AverageBenchmarkSchema = new Schema({
-    n: {
-        type: Number,
-        required: [true, 'the size of the data n is required in a measurement'],
-    },
-    times: {
-        type: [TimeBenchmarkSchema],
-        default: [],
-    },
-}, {
-    _id: false,
-})
-
-AverageBenchmarkSchema.virtual('average').get(function() {
-    if (this.times.length === 0) return 0
-    else return this.times.reduce((acc, cur) => acc + cur.time) / this.times.length
-})
-
-AverageBenchmarkSchema.virtual('variance').get(function() {
-    if (this.times.length === 0) return 0
-    else return this.times.reduce((acc, cur) => acc + cur.time * cur.time, 0) / this.times.length - this.average * this.average
-})
-
-const ScalingBenchmarkSchema = new Schema({
-    error: {
-        type: String,
-    },
-    scaling: {
-        type: String,
-        enum: {
-            values: ['constant', 'logarithmic', 'linear', 'linear logarithmic', 'quadratic', 'cubic', 'exponential', 'factorial'],
-            message: '{VALUE} is not a type of scaling',
-        },
-    },
-    big_o: {
-        type: String,
-        enum: {
-            values: ['1', 'log(n)', 'n', 'n*log(n)', 'n^2', 'n^3', '2^n', 'n!'],
-            message: '{VALUE} is not a big O notation type'
-        },
-    },
-    measurements: {
-        type: [AverageBenchmarkSchema],
-        default: [],
-    },
-}, {
-    _id: false,
-})
+// scaling: {
+//     type: String,
+//     enum: {
+//         values: ['constant', 'logarithmic', 'linear', 'linear logarithmic', 'quadratic', 'cubic', 'exponential', 'factorial'],
+//         message: '{VALUE} is not a type of scaling',
+//     },
+// },
+// big_o: {
+//     type: String,
+//     enum: {
+//         values: ['1', 'log(n)', 'n', 'n*log(n)', 'n^2', 'n^3', '2^n', 'n!'],
+//         message: '{VALUE} is not a big O notation type'
+//     },
+// },
 
 const ReportSchema = new Schema({
     id: {
@@ -84,6 +41,8 @@ const ReportSchema = new Schema({
     benchmarks: {
         speed: {
             measurements: [Number],
+            average: Number,
+            stddev: Number,
             error: {
                 message: String,
                 expected: String,
@@ -92,6 +51,17 @@ const ReportSchema = new Schema({
         },
     },
 })
+
+// ReportSchema.virtual('benchmarks.speed.average').get(function() {
+//     console.log(this)
+//     return average(this.measurements)
+// })
+// ReportSchema.virtual('benchmarks.speed.variance').get(function() {
+//     return variance(this.measurements)
+// })
+
+ReportSchema.set('toObject', {virtuals: true})
+ReportSchema.set('toJSON', {virtuals: true})
 
 const Report = model('report', ReportSchema)
 

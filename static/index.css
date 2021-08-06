@@ -315,6 +315,7 @@ h3 {
 }
 .search__field {
   font-size: 1.5em;
+  font-weight: 200;
   width: 100%;
   border: solid 0.2em transparent;
   outline: none;
@@ -451,18 +452,54 @@ h3 {
   grid-auto-flow: row dense;
   grid-template-columns: repeat(auto-fit, 10em);
   grid-auto-rows: 10em;
+  column-gap: 0.5em;
+  row-gap: 0.5em;
 }
 
 .benchmark-item {
-  grid-column: span 1;
-  grid-row: span 1;
-  border: solid 0.5em orangered;
+  background-color: #B2DBBF;
+  padding: 0.3em;
+  color: #247BA0;
 }
 
-.benchmark-item-2 {
+.info {
+  grid-column: span 2;
+  grid-row: span 1;
+  overflow: hidden;
+  display: grid;
+  justify-items: center;
+}
+.info__url {
+  outline: none;
+  border: none;
+  cursor: pointer;
+  color: currentColor;
+  background-color: #B2DBBF;
+  font-size: 1.3em;
+  font-weight: 300;
+}
+.info__url:hover {
+  color: #FF1654;
+}
+.info__id {
+  font-weight: 500;
+  font-size: 0.9em;
+}
+
+.average {
   grid-column: span 2;
   grid-row: span 2;
-  border: solid 0.5em orangered;
+  display: grid;
+}
+.average__name {
+  font-size: 1.5em;
+  text-align: center;
+  color: #FF1654;
+}
+.average__value {
+  font-weight: 500;
+  text-align: center;
+  color: #FF1654;
 }
 
 .leaderboard__title {

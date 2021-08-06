@@ -2,6 +2,13 @@ const m = require('mithril')
 
 const {search_state, content_state} = require('./state')
 
+const {Chart, LineController, BarController, CategoryScale, LinearScale, PointElement, LineElement, BarElement} = require('chart.js')
+Chart.register(LineController, BarController, CategoryScale, LinearScale, PointElement, LineElement, BarElement)
+
+const {round} = require('../math')
+
+const { vertical_bar_chart, update_data } = require('./chart_configs')
+
 function make_option(option) {
     return m('li', {class: 'option'}, [
         m('button', {
@@ -64,18 +71,47 @@ const url_content = {
     },
 }
 
-const benchmark_item = {
+const benchmark_info = {
     view(vnode) {
-        return m('div', {class: 'benchmark-item'}, [
-            m('p', {class: 'benchmark-item__msg'}, vnode.attrs.msg),
+        return m('div', {class: 'benchmark-item info'}, [
+            m('button', {
+                class: 'info__url', 
+                onclick() {
+                    search_state.set_value(vnode.attrs.info.url)
+                },
+            }, vnode.attrs.info.url),
+            m('p', {class: 'info__id'}, vnode.attrs.info.id),
+            m('p', {class: 'info__time'}, new Date(vnode.attrs.info.time).toLocaleString()),
         ])
     }
 }
 
-const benchmark_item_2 = {
+const average_chart = {
+    oncreate(vnode) {
+        const ctx = vnode.dom.getContext('2d')
+        this.chart = new Chart(ctx, vertical_bar_chart)
+    },
+    onupdate(vnode) {
+        update_data(this.chart, vnode.attrs.data, {backgroundColor: '#247BA0'})
+    },
+    view() {
+        return m('canvas[height=220em]', {
+            class: 'average__plot',
+        })
+    },
+}
+
+const average = {
     view(vnode) {
-        return m('div', {class: 'benchmark-item-2'}, [
-            m('p', {class: 'benchmark-item__msg'}, vnode.attrs.msg),
+        return m('div', {class: 'benchmark-item average'}, [
+            m('p', {class: 'average__name'}, vnode.attrs.data.name),
+            m(average_chart, {data: vnode.attrs.data.measurements}),
+            m('p', {class: 'average__value'}, [
+                m('span', round(vnode.attrs.data.average)),
+                ' ± ',
+                m('span', round(vnode.attrs.data.stddev, 1)),
+                ' ms',
+            ]),
         ])
     }
 }
@@ -83,15 +119,8 @@ const benchmark_item_2 = {
 const benchmark_content = {
     view() {
         return m('div', {class: 'benchmark'}, [
-            // JSON.stringify(content_state.benchmark)
-            m(benchmark_item, {msg: 'item 1'}),
-            m(benchmark_item_2, {msg: 'item 2'}),
-            m(benchmark_item, {msg: 'item 3'}),
-            m(benchmark_item, {msg: 'item 4'}),
-            m(benchmark_item_2, {msg: 'item 5'}),
-            m(benchmark_item, {msg: 'item 6'}),
-            m(benchmark_item, {msg: 'item 7'}),
-            m(benchmark_item, {msg: 'item 8'}),
+            m(benchmark_info, {info: content_state.info}),
+            m(average, {data: content_state.get_benchmark('speed')}),
         ])
     },
 }
